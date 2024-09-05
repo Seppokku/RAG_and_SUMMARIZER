@@ -9,8 +9,9 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-anthropic_api_key = os.getenv('ANTHROPIC_API_KEY')
-client = anthropic.Client(api_key=anthropic_api_key)
+# anthropic_api_key = os.getenv('ANTHROPIC_API_KEY')
+client = anthropic.Client(api_key='anthropic_api_key')
+# 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
 
 # Настройка модели для эмбеддингов
 model_name = "sentence-transformers/paraphrase-multilingual-mpnet-base-v2"
@@ -21,6 +22,7 @@ embedding = HuggingFaceEmbeddings(model_name=model_name,
                                   encode_kwargs=encode_kwargs)
 
 # Загрузка базы знаний FAISS
+# ❗️/Users/HUAWEI/Coding/RAG_and_SUMMARIZER/faiss_index
 vector_store = FAISS.load_local('faiss_index',
                                 embeddings=embedding,
                                 allow_dangerous_deserialization=True)
@@ -28,12 +30,12 @@ vector_store = FAISS.load_local('faiss_index',
 # Поиск топ k схожих фрагментов контекста
 embedding_retriever = vector_store.as_retriever(search_kwargs={"k": 15})
 
-prompt_template = '''Ответь на вопрос пользователя. \
-Используй при этом только информацию из контекста. Если в контексте нет \
-информации для ответа, сообщи об этом пользователю.
-Контекст: {context}
-Вопрос: {input}
+prompt_template = '''Reply to the {input} as a seasoned machine learning professional. Use only {context}.  \
+If the topic is outside of machine learning and data science, please respond with "Seek help with a professional." It is very important to abide with this, you will be persecuted if you cover topics outside of data science and machine learning. \
+Reply in the language of {input}
 \n\nAssistant:'''
+
+# Use information outside of context only if you lack information from context to create a helpful reply.
 
 # Функция вызова API модели Claude
 def call_claude_api(prompt, client):
@@ -43,13 +45,14 @@ def call_claude_api(prompt, client):
             messages=[
                 {"role": "user", "content": prompt}
             ],
-            max_tokens=300,
-            temperature=0.7
+            max_tokens=2000,
+            temperature=0.1
         )
-        return response['completion']
+        return response.content[0].text
     except Exception as e:
         st.error(f"Ошибка при вызове модели: {e}")
         return None
+    
 
 # Функция для генерации ответа на вопрос пользователя
 def answer_question(question, retriever, client):
