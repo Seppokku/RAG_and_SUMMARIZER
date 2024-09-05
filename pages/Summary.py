@@ -1,4 +1,8 @@
 import streamlit as st
+import anthropic
+import os
+from dotenv import load_dotenv
+load_dotenv()
 
 # Заголовок страницы
 st.title("Summary Page")
@@ -14,7 +18,7 @@ summary_type = st.radio(
     "Выберите тип саммари:",
     ["Анализ данных", "Отчет по продажам", "Прогнозирование", "Обзор рынка", "План действий"]
 )
-
+ 
 # Словарь с запросами для каждого типа саммари
 prompts = {
     "Анализ данных": "Пожалуйста, предоставьте анализ данных по следующему видео:",

@@ -1,0 +1,668 @@
+
+gradiant buspar Tuan regression main
+0:05
+ideas stat quest hello I'm Josh stormer
+0:12
+and welcome to stat quest today we're
+0:15
+going to talk about the gradient boost
+0:16
+machine learning algorithm specifically
+0:19
+we're going to focus on how gradient
+0:21
+boost is used for regression
+0:24
+note this stat quest assumes you already
+0:27
+understand decision trees so if you're
+0:29
+not already down with those check out
+0:32
+the quest this stat quest also assumes
+0:35
+that you are familiar with adaboost and
+0:37
+the trade-off between bias and variance
+0:40
+if not check out the quests the links
+0:44
+are in the description below this stat
+0:47
+quest is the first part in a series that
+0:49
+explains how the gradient boost machine
+0:51
+learning algorithm works specifically
+0:54
+we'll use this data
+0:56
+where we have the height measurements
+0:59
+from six people their favorite colors
+1:01
+their genders and their weights
+1:06
+and we'll walk through step by step the
+1:09
+most common way that gradient boost fits
+1:12
+a model to this training data note when
+1:15
+gradient boost is used to predict a
+1:17
+continuous value like weight we say that
+1:20
+we are using gradient boost for
+1:22
+regression
+1:24
+using gradient boosts for regression is
+1:27
+different from doing a linear regression
+1:28
+so while the two methods are related
+1:30
+don't get them confused with each other
+1:34
+part two in this series we'll dive deep
+1:37
+into the math behind the gradient boost
+1:39
+algorithm for regression walking through
+1:41
+it step-by-step and proving that what we
+1:44
+cover today is correct
+1:46
+part three in this series shows how
+1:49
+gradient boost can be used for
+1:51
+classification specifically we'll walk
+1:55
+through step by step the most common way
+1:57
+gradient boost can classify someone is
+2:00
+either loving the movie troll 2 or not
+2:02
+loving troll 2 part 4 we'll return to
+2:07
+the math behind gradient boost this time
+2:09
+focusing on classification walking
+2:12
+through it step-by-step note the
+2:15
+gradient boost algorithm looks
+2:17
+complicated because it was designed to
+2:19
+be configured in a wide variety of ways
+2:23
+but the reality is that 99% of the time
+2:27
+only one configuration is used to
+2:29
+predict continuous values like weight
+2:31
+and one configuration is used to
+2:34
+classify samples into different
+2:36
+categories
+2:38
+this stack quest focuses on showing you
+2:40
+the most common way gradient boost is
+2:42
+used to predict a continuous value like
+2:45
+weight
+2:46
+if you are familiar with adaboost then a
+2:49
+lot of gradient boost will seem very
+2:51
+similar so let's briefly compare and
+2:55
+contrast at a boost and gradient boost
+2:57
+if we want to use these measurements to
+Gradient Boost compared to AdaBoost
+3:01
+predict weight then adaboost starts by
+3:04
+building a very short tree called a
+3:06
+stump from the training data
+3:09
+and then the amount of say that the new
+3:11
+stump has on the final output is based
+3:14
+on how well it compensated for those
+3:16
+previous errors
+3:18
+then adaboost builds the next stomp
+3:21
+based on errors that the previous stump
+3:23
+made in this example the new stump did a
+3:27
+poor job compensating for the previous
+3:30
+stumps errors and its size reflects its
+3:33
+reduced amount of say then adaboost
+3:36
+builds another stump based on the errors
+3:39
+made by the previous stump and this
+3:42
+stump did a little better than the last
+3:43
+stop so it's a little larger
+3:46
+then adaboost continues to make stumps
+3:49
+in this fashion until it is made the
+3:51
+number of stumps you asked for or it has
+3:54
+a perfect fit
+3:56
+in contrast gradient boost starts by
+3:59
+making a single leaf instead of a tree
+4:01
+or stump
+4:03
+this leaf represents an initial guess
+4:06
+for the weights for all of the samples
+4:09
+when trying to predict a continuous
+4:11
+value like weight the first guess is the
+4:14
+average value then gradient boost builds
+4:18
+a tree like adaboost this tree is based
+4:22
+on the errors made by the previous tree
+4:25
+but unlike adaboost this tree is usually
+4:29
+larger than a stump that said gradient
+4:33
+boost still restricts the size of the
+4:34
+tree in the simple example that we will
+4:38
+go through in this stat quest we will
+4:40
+build trees with up to 4 leaves but no
+4:43
+larger however in practice people often
+4:48
+set the maximum number of leaves to be
+4:50
+between 8 and 32 thus like adaboost
+4:54
+gradient boost builds fixed size trees
+4:57
+based on the previous trees errors but
+5:00
+unlike adaboost each tree can be larger
+5:03
+than a stump
+5:05
+also like adaboost gradient boost scales
+5:09
+the trees
+5:10
+however gradient boost scales all trees
+5:13
+by the same amount then gradient boost
+5:17
+builds another tree based on the errors
+5:19
+made by the previous tree and then it
+5:22
+scales the tree
+5:25
+and gradient boost continues to build
+5:27
+trees in this fashion until it has made
+5:29
+the number of trees you asked for or
+5:32
+additional trees fail to improve the fit
+5:35
+now that we know the main similarities
+5:38
+and differences between gradient boost
+5:40
+and adaboost let's see how the most
+5:43
+common gradient boost configuration
+5:46
+would use this training data to predict
+5:48
+weight
+Building the first tree to predict weight
+5:50
+the first thing we do is calculate the
+5:52
+average weight this is the first attempt
+5:56
+at predicting everyone's weight
+5:59
+in other words if we stopped right now
+6:01
+we would predict that everyone weighed
+6:04
+70 1.2 kilograms
+6:07
+however gradient boost doesn't stop here
+6:11
+the next thing we do is build a tree
+6:14
+based on the errors from the first tree
+6:17
+the errors that the previous tree made
+6:20
+are the differences between the observed
+6:22
+weights and the predicted weight 70 1.2
+6:27
+so let's start by plugging in seventy
+6:30
+one point two for the predicted weight
+6:33
+and then plug in the first observed wait
+6:37
+and do the math
+6:40
+and save the difference which is called
+6:43
+a pseudo residual in a new column note
+6:47
+the term pseudo residual is based on
+6:50
+linear regression where the difference
+6:52
+between the observed values and the
+6:54
+predicted values results in residuals
+6:58
+the pseudo part of pseudo residual is a
+7:02
+reminder that we are doing gradient
+7:03
+boost not linear regression and is
+7:06
+something I'll talk more about in part 2
+7:08
+of this series when we go through the
+7:10
+math
+7:11
+now we do the same thing for the
+7:14
+remaining weights
+7:16
+now we will build a tree using height
+7:19
+favorite color and gender to predict the
+7:23
+residuals if it seems strange to predict
+7:27
+the residuals instead of the original
+7:29
+weights just bear with me and soon all
+7:32
+will become clear
+7:34
+so setting aside the reason why we are
+7:38
+building a tree to predict the residuals
+7:40
+for the time being here's the tree
+7:43
+remember in this example we are only
+7:46
+allowing up to four leaves but when
+7:49
+using a larger data set it is common to
+7:52
+allow anywhere from 8 to 32
+7:56
+by restricting the total number of
+7:58
+leaves we get fewer leaves than
+8:01
+residuals
+8:02
+as a result these two rows of data go to
+8:06
+the same leaf so we replace these
+8:09
+residuals with their average
+8:13
+and these two rows of data go to the
+8:15
+same leaf so we replace these residuals
+8:19
+with their average
+8:22
+now we can combine the original leaf
+8:24
+with the new tree to make a new
+8:28
+prediction of an individual's weight
+8:30
+from the training data
+8:33
+we start with the initial prediction
+8:35
+seventy one point two then we run the
+8:39
+data down the tree and we get sixteen
+8:43
+point eight so the predicted weight
+8:46
+equals seventy one point two plus
+8:49
+sixteen point eight which equals eighty
+8:52
+eight which is the same as the observed
+8:56
+weight is this awesome
+8:59
+no the model fits the training data too
+9:03
+well in other words we have low bias but
+9:07
+probably very high variance gradient
+9:11
+boost deals with this problem by using a
+9:14
+learning rate to scale the contribution
+9:16
+from the new tree
+9:18
+the learning rate is a value between
+9:21
+zero and one
+9:23
+in this case we'll set the learning rate
+9:26
+to 0.1 now the predicted weight equals
+9:31
+seventy one point two plus zero point
+9:34
+one times sixteen point eight which
+9:37
+equals seventy two point nine
+9:40
+with the learning rate set to 0.1 the
+9:44
+new prediction isn't as good as it was
+9:46
+before but it's a little better than the
+9:49
+prediction made with just the original
+9:51
+leaf which predicted that all samples
+9:53
+would weigh seventy one point two in
+9:57
+other words scaling the tree by the
+9:59
+learning rate results in a small step in
+10:02
+the right direction according to the
+10:05
+dude that invented gradient boost Jerome
+10:07
+Freedman empirical evidence shows that
+10:10
+taking lots of small steps in the right
+10:12
+direction results in better predictions
+10:14
+with a testing data set
+10:16
+ie lower variance BAM so let's build
+10:22
+another tree so we can take another
+10:24
+small step in the right direction just
+10:27
+like before we calculate the pseudo
+10:30
+residuals the difference between the
+10:32
+observed weights and our latest
+10:34
+predictions so we plug in the observed
+Building the second tree to predict weight
+10:38
+weight
+10:40
+and the new predicted weight
+10:42
+and we get 15.1 and we save that in the
+10:48
+column for pseudo residuals
+10:51
+then we repeat for all of the other
+10:53
+individuals in the training data set
+10:57
+small BAM
+11:00
+note these are the original residuals
+11:03
+from when our prediction was simply the
+11:05
+average overall weight and these are the
+11:09
+residuals
+11:09
+after adding the Nutri scaled by the
+11:12
+learning rate the new residuals are all
+11:15
+smaller than before so we've taken a
+11:18
+small step in the right direction double
+11:21
+bam
+11:24
+now let's build a new tree to predict
+11:27
+the new residuals
+11:29
+and here's the Nutri note in this simple
+11:34
+example the branches are the same as
+11:36
+before however in practice the trees can
+11:40
+be different each time
+11:42
+just like before since multiple samples
+11:45
+ended up in these leaves we just replace
+11:48
+the residuals with their averages now we
+11:52
+combine the new tree with the previous
+11:54
+tree and the initial leaf note we scale
+11:59
+all of the trees by the learning rate
+12:01
+which we set to 0.1
+12:04
+and add everything together now we're
+12:09
+ready to make a new prediction from the
+12:11
+training data
+12:13
+just like before we start with the
+12:15
+initial prediction then add the scaled
+12:18
+amount from the first tree in the scaled
+12:22
+amount from the second tree that gives
+12:26
+us seventy one point two plus zero point
+12:30
+one times sixteen point eight plus zero
+12:33
+point one times fifteen point one which
+12:36
+equals seventy four point four which is
+12:40
+another small step closer to the
+12:43
+observed weight now we use the initial
+12:46
+leaf plus the scaled values from the
+12:49
+first tree plus the scaled values from
+12:53
+the second tree to calculate new
+12:56
+residuals
+12:58
+remember these were the residuals from
+13:01
+when we just use a single leaf to
+13:04
+predict weight and these were the
+13:07
+residuals after we added the first tree
+13:09
+to the prediction
+13:11
+and these are the residuals after we
+13:14
+added the second tree to the prediction
+13:17
+each time we add a tree to the Bur
+13:19
+diction the residuals get smaller so
+13:22
+we've taken another small step towards
+13:25
+making good predictions
+Building additional trees to predict weight
+13:28
+now we build another tree to predict the
+13:31
+new residuals
+13:33
+and add it to the chain of trees that we
+13:36
+have already created and we keep making
+13:39
+trees until we reach the maximum
+13:42
+specified or adding additional trees
+13:44
+does not significantly reduce the size
+13:47
+of the residuals BAM then when we get
+Prediction with Gradient Boost
+13:52
+some new measurements we can predict
+13:55
+weight by starting with the initial
+13:58
+prediction then adding the scaled value
+14:01
+from the first tree and the second tree
+14:05
+and the third tree etc etc etc
+14:13
+once the math is all done we are left
+14:15
+with the predicted weight
+14:18
+in this case we predicted that this
+14:20
+person weighed 70 kilograms
+14:24
+triple bomb in summary when gradient
+Summary of concepts and main ideas
+14:30
+boost is used for regression we start
+14:33
+with a leaf that is the average value of
+14:36
+the variable we want to predict in this
+14:40
+case we want it to predict wait
+14:43
+then we add a tree based on the
+14:46
+residuals the difference between the
+14:48
+observed values and the predicted values
+14:52
+and we scale the trees contribution to
+14:55
+the final prediction with a learning
+14:57
+rate
+14:58
+then we add another tree based on the
+15:01
+new residuals
+15:04
+adding trees based on the errors made by
+15:07
+the previous tree that's all there is to
+15:10
+it
+15:11
+BAM
+15:14
+tune in for part 2 in this series when
+15:16
+we dive deep into the math behind the
+15:18
+gradient boost algorithm for regression
+15:20
+walking through it's step by step and
+15:23
+proving that it really is this simple
+15:26
+hooray
+15:28
+we've made it to the end of another
+15:29
+exciting stat quest if you like this
+15:32
+stat quest and want to see more please
+15:34
+subscribe and if you want to support
+15:36
+stat quest consider buying one of my
+15:39
+original songs or buying a stat quest
+15:41
+t-shirt or hoodie the links are in the
+15:44
+description below alright until next
+15:47
+time quest on
